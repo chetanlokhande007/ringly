@@ -1,0 +1,34 @@
+{
+  "manifest_version": 3,
+  "name": "Ringly — Twilio Softphone",
+  "version": "1.0.0",
+  "description": "Business calling in your browser. Dialpad, auto dialer, SMS, contacts, and Gmail integration powered by Twilio.",
+  "action": {
+    "default_popup": "popup.html",
+    "default_icon": {
+      "16": "icon.png",
+      "48": "icon.png",
+      "128": "icon.png"
+    },
+    "default_title": "Ringly"
+  },
+  "background": { "service_worker": "background.js" },
+  "permissions": [
+    "storage",
+    "notifications",
+    "contextMenus",
+    "activeTab",
+    "tabs",
+    "alarms",
+    "clipboardWrite",
+    "downloads",
+    "identity"
+  ],
+  "host_permissions": ["<all_urls>"],
+  "side_panel": { "default_path": "popup.html" },
+  "icons": {
+    "16": "icon.png",
+    "48": "icon.png",
+    "128": "icon.png"
+  }
+}

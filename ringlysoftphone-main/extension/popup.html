@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Ringly</title>
+<style>
+  html, body { margin: 0; padding: 0; width: 420px; height: 500px; overflow: hidden; background: #0f172a; font-family: system-ui, sans-serif; color: white; }
+  iframe { width: 100%; height: 100%; border: 0; display: block; }
+  .fallback { display:flex; align-items:center; justify-content:center; height:100%; text-align:center; padding: 24px; font-size: 13px; }
+  .fallback a { color: #10b981; }
+</style>
+</head>
+<body>
+<iframe id="app" src="__APP_URL__" allow="microphone; camera; autoplay; clipboard-read; clipboard-write"></iframe>
+<script>
+  // Replace the placeholder with the live Ringly URL when packaging.
+  var app = document.getElementById('app');
+  if (!app.src || app.src.indexOf('__APP_URL__') !== -1) {
+    document.body.innerHTML = '<div class="fallback">Open <a href="https://id-preview--b9899d10-afab-4608-acf5-852d855dbbcb.lovable.app" target="_blank">Ringly</a> to configure Twilio credentials, then reload this popup.</div>';
+  }
+</script>
+</body>
+</html>
