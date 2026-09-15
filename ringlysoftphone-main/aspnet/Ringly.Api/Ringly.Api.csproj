@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk.Web">
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
@@ -9,6 +9,7 @@
     <SpaRoot>$(MSBuildProjectDirectory)/../../</SpaRoot>
     <BuildSpaOnPublish Condition="'$(BuildSpaOnPublish)' == ''">true</BuildSpaOnPublish>
     <NpmCommand Condition="'$(NpmCommand)' == ''">npm</NpmCommand>
+    <UserSecretsId>b7dbb299-3a65-4666-b6d5-28faa9b947c2</UserSecretsId>
   </PropertyGroup>
 
   <ItemGroup>
