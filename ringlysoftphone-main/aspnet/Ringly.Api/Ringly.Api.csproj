@@ -9,7 +9,7 @@
     <SpaRoot>$(MSBuildProjectDirectory)/../../</SpaRoot>
     <BuildSpaOnPublish Condition="'$(BuildSpaOnPublish)' == ''">true</BuildSpaOnPublish>
     <NpmCommand Condition="'$(NpmCommand)' == ''">npm</NpmCommand>
-    <UserSecretsId>b7dbb299-3a65-4666-b6d5-28faa9b947c2</UserSecretsId>
+    <UserSecretsId>f7210351-89fc-4d8f-97f0-86fbe07bf248</UserSecretsId>
   </PropertyGroup>
 
   <ItemGroup>
@@ -17,6 +17,7 @@
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.10">
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
+    <PackageReference Include="Twilio" Version="8.0.1" />
   </ItemGroup>
 
   <!-- Never ship a stale wwwroot from source control -->
@@ -39,7 +40,7 @@
   <Target Name="IncludeReactAppInPublish" AfterTargets="BuildReactApp" Condition="'$(BuildSpaOnPublish)' == 'true'">
     <ItemGroup>
       <SpaFiles Include="$(MSBuildProjectDirectory)/wwwroot/**" />
-      <ResolvedFileToPublish Include="@(SpaFiles->'%(FullPath)')" Exclude="@(ResolvedFileToPublish)">
+      <ResolvedFileToPublish Include="@(SpaFiles-&gt;'%(FullPath)')" Exclude="@(ResolvedFileToPublish)">
         <RelativePath>wwwroot/%(RecursiveDir)%(Filename)%(Extension)</RelativePath>
         <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
       </ResolvedFileToPublish>

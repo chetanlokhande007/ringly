@@ -2,10 +2,16 @@ using Microsoft.EntityFrameworkCore;
 using Ringly.Api.Data;
 using Ringly.Api.Security;
 
+AppContext.SetSwitch("System.Net.DisableIPv6", true);
+
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
-builder.Services.AddHttpClient();
+builder.Services.AddHttpClient("", _ => { })
+    .ConfigurePrimaryHttpMessageHandler(() => new SocketsHttpHandler
+    {
+        ConnectTimeout = TimeSpan.FromSeconds(5)
+    });
 builder.Services.AddSingleton<ICredentialProtector, AesGcmCredentialProtector>();
 
 var connectionString = builder.Configuration.GetConnectionString("Default");

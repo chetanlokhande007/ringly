@@ -143,7 +143,11 @@ export async function initDevice(c: TwilioCreds) {
     },
   });
   const DeviceCtor = await loadDeviceCtor();
-  device = new DeviceCtor(token, { logLevel: 1, allowIncomingWhileBusy: false });
+  device = new DeviceCtor(token, {
+    logLevel: 1,
+    allowIncomingWhileBusy: false,
+    edge: ["ashburn", "singapore", "roaming"],
+  });
   identity = c.identity;
   device.on("registered", emit);
   device.on("unregistered", emit);

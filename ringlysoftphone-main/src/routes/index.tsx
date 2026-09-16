@@ -132,6 +132,8 @@ function App() {
           ...prev,
           accountSid: prev.accountSid || d.accountSid || "",
           apiKeySid: prev.apiKeySid || d.apiKeySid || "",
+          apiKeySecret: prev.apiKeySecret || (d.hasServerApiKeySecret ? "configured-on-server" : ""),
+          authToken: prev.authToken || (d.hasServerAuthToken ? "configured-on-server" : ""),
           twimlAppSid: prev.twimlAppSid || d.twimlAppSid || "",
           identity: prev.identity || d.identity || "",
           callerId: prev.callerId || d.callerId || "",

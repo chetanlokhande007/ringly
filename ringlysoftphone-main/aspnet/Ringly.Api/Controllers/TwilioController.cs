@@ -30,7 +30,8 @@ public class TwilioController : ControllerBase
 
     private string AccountSid(string? given) => !string.IsNullOrWhiteSpace(given) ? given! : Setting("AccountSid");
 
-    private string AuthToken(string? given) => !string.IsNullOrWhiteSpace(given) ? given! : Setting("AuthToken");
+    private string AuthToken(string? given) =>
+        (!string.IsNullOrWhiteSpace(given) && given != "configured-on-server") ? given! : Setting("AuthToken");
 
     private string PublicBaseUrl()
     {
@@ -47,14 +48,23 @@ public class TwilioController : ControllerBase
         return client;
     }
 
-    public record VoiceTokenRequest(string AccountSid, string ApiKeySid, string ApiKeySecret, string TwimlAppSid, string Identity, int? Ttl);
+    public record VoiceTokenRequest(string? AccountSid, string? ApiKeySid, string? ApiKeySecret, string? TwimlAppSid, string? Identity, int? Ttl);
 
     /// <summary>Mint a Twilio Voice Access Token (JWT, cty=twilio-fpa;v=1).</summary>
     [HttpPost("token")]
     public IActionResult Token([FromBody] VoiceTokenRequest req)
     {
-        if (string.IsNullOrWhiteSpace(req.ApiKeySid) || string.IsNullOrWhiteSpace(req.ApiKeySecret)
-            || string.IsNullOrWhiteSpace(req.TwimlAppSid) || string.IsNullOrWhiteSpace(req.Identity))
+        var apiKeySid = !string.IsNullOrWhiteSpace(req?.ApiKeySid) ? req.ApiKeySid : Setting("ApiKeySid");
+        var apiKeySecret = (!string.IsNullOrWhiteSpace(req?.ApiKeySecret) && req.ApiKeySecret != "configured-on-server")
+            ? req.ApiKeySecret
+            : Setting("ApiKeySecret");
+        var twimlAppSid = !string.IsNullOrWhiteSpace(req?.TwimlAppSid) ? req.TwimlAppSid : Setting("TwimlAppSid");
+        var identity = !string.IsNullOrWhiteSpace(req?.Identity) ? req.Identity : Setting("Identity");
+        var accountSid = AccountSid(req?.AccountSid);
+
+        if (string.IsNullOrWhiteSpace(apiKeySid) || string.IsNullOrWhiteSpace(apiKeySecret)
+            || string.IsNullOrWhiteSpace(twimlAppSid) || string.IsNullOrWhiteSpace(identity)
+            || string.IsNullOrWhiteSpace(accountSid))
         {
             return BadRequest(new { error = "Missing credentials" });
         }
@@ -63,38 +73,24 @@ public class TwilioController : ControllerBase
         var ttl = Math.Clamp(req.Ttl ?? 3600, 60, 24 * 3600);
         var expires = now + ttl;
 
-        var grants = new Dictionary<string, object>
+        var voiceGrant = new Twilio.Jwt.AccessToken.VoiceGrant
         {
-            ["identity"] = req.Identity,
-            ["voice"] = new Dictionary<string, object>
-            {
-                ["incoming"] = new Dictionary<string, object> { ["allow"] = true },
-                ["outgoing"] = new Dictionary<string, object> { ["application_sid"] = req.TwimlAppSid },
-            },
+            IncomingAllow = true,
+            OutgoingApplicationSid = twimlAppSid
         };
 
-        var header = new Dictionary<string, object>
-        {
-            ["alg"] = "HS256",
-            ["typ"] = "JWT",
-            ["cty"] = "twilio-fpa;v=1",
-        };
+        var grants = new HashSet<Twilio.Jwt.AccessToken.IGrant> { voiceGrant };
 
-        var payload = new Dictionary<string, object>
-        {
-            ["jti"] = $"{req.ApiKeySid}-{now}",
-            ["grants"] = grants,
-            ["iss"] = req.ApiKeySid,
-            ["sub"] = AccountSid(req.AccountSid),
-            ["iat"] = now,
-            ["exp"] = expires,
-        };
+        var token = new Twilio.Jwt.AccessToken.Token(
+            accountSid,
+            apiKeySid,
+            apiKeySecret,
+            identity: identity,
+            expiration: DateTime.UtcNow.AddSeconds(ttl),
+            grants: grants
+        );
 
-        var token = $"{B64(header)}.{B64(payload)}";
-        using var hmac = new HMACSHA256(Encoding.UTF8.GetBytes(req.ApiKeySecret));
-        var signature = Base64Url(hmac.ComputeHash(Encoding.UTF8.GetBytes(token)));
-
-        return Ok(new { token = $"{token}.{signature}", identity = req.Identity, expiresAt = expires });
+        return Ok(new { token = token.ToJwt(), identity, expiresAt = expires });
     }
 
     private static string B64(object o) => Base64Url(Encoding.UTF8.GetBytes(JsonSerializer.Serialize(o)));
@@ -116,6 +112,7 @@ public class TwilioController : ControllerBase
         identity = Setting("Identity"),
         callerId = Setting("CallerId"),
         hasServerAuthToken = !string.IsNullOrWhiteSpace(Setting("AuthToken")),
+        hasServerApiKeySecret = !string.IsNullOrWhiteSpace(Setting("ApiKeySecret")),
     });
 
     public record CredsRequest(string? AccountSid, string? AuthToken);

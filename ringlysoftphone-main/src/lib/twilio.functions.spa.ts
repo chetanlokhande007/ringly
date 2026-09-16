@@ -27,6 +27,7 @@ export const getTwilioDefaults = async () =>
     identity: string;
     callerId: string;
     hasServerAuthToken: boolean;
+    hasServerApiKeySecret: boolean;
   };
 
 export const testConnection = (o: Opt<Record<string, unknown>>) =>
